@@ -242,6 +242,7 @@ function enter(svgPaths, g) {
       var edge = g.edge(e),
           sourceElem = g.node(e.v).elem,
           points = _.range(edge.points.length).map(function() { return getCoords(sourceElem); });
+      edge.elem = this.parentNode;
       return createLine(edge, points);
     });
   svgPathsEnter.append("defs");
@@ -293,7 +294,7 @@ function createNodes(selection, g, shapes) {
         labelGroup = thisGroup.append("g").attr("class", "label"),
         labelDom = addLabel(labelGroup, node),
         shape = shapes[node.shape],
-        bbox = labelDom.node().getBBox();
+        bbox = _.pick(labelDom.node().getBBox(), "width", "height");
 
     node.elem = this;
 

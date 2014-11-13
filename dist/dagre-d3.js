@@ -242,6 +242,7 @@ function enter(svgPaths, g) {
       var edge = g.edge(e),
           sourceElem = g.node(e.v).elem,
           points = _.range(edge.points.length).map(function() { return getCoords(sourceElem); });
+      edge.elem = this.parentNode;
       return createLine(edge, points);
     });
   svgPathsEnter.append("defs");
@@ -293,7 +294,7 @@ function createNodes(selection, g, shapes) {
         labelGroup = thisGroup.append("g").attr("class", "label"),
         labelDom = addLabel(labelGroup, node),
         shape = shapes[node.shape],
-        bbox = labelDom.node().getBBox();
+        bbox = _.pick(labelDom.node().getBBox(), "width", "height");
 
     node.elem = this;
 
@@ -1357,7 +1358,7 @@ function debugOrdering(g) {
 
 },{"./graphlib":33,"./lodash":36,"./util":55}],33:[function(require,module,exports){
 module.exports=require(9)
-},{"/Users/cpettitt/projects/dagre-d3/lib/graphlib.js":9,"graphlib":57}],34:[function(require,module,exports){
+},{"/Users/romain.viovi/Documents/workspace/dagre-d3/lib/graphlib.js":9,"graphlib":57}],34:[function(require,module,exports){
 var _ = require("./lodash"),
     Graph = require("./graphlib").Graph,
     List = require("./data/list");
@@ -1873,7 +1874,7 @@ function canonicalize(attrs) {
 
 },{"./acyclic":28,"./add-border-segments":29,"./coordinate-system":30,"./graphlib":33,"./lodash":36,"./nesting-graph":37,"./normalize":38,"./order":43,"./parent-dummy-chains":48,"./position":50,"./rank":52,"./util":55}],36:[function(require,module,exports){
 module.exports=require(20)
-},{"/Users/cpettitt/projects/dagre-d3/lib/lodash.js":20,"lodash":77}],37:[function(require,module,exports){
+},{"/Users/romain.viovi/Documents/workspace/dagre-d3/lib/lodash.js":20,"lodash":77}],37:[function(require,module,exports){
 var _ = require("./lodash"),
     util = require("./util");
 
@@ -3012,6 +3013,7 @@ function horizontalCompaction(g, layering, root, align, reverseSep) {
   // We use local variables for these parameters instead of manipulating the
   // graph because it becomes more verbose to access them in a chained manner.
   var shift = {},
+      shiftNeighbor = {},
       sink = {},
       xs = {},
       pred = {},
@@ -3028,7 +3030,7 @@ function horizontalCompaction(g, layering, root, align, reverseSep) {
 
   _.each(g.nodes(), function(v) {
     if (root[v] === v) {
-      placeBlock(g, layering, sepFn, root, align, shift, sink, pred, xs, v);
+      placeBlock(g, layering, sepFn, root, align, shift, shiftNeighbor, sink, pred, xs, v);
     }
   });
 
@@ -3039,6 +3041,12 @@ function horizontalCompaction(g, layering, root, align, reverseSep) {
       // http://www.inf.uni-konstanz.de/~brandes/publications/ for details.
       if (v === root[v] && shift[sink[root[v]]] < Number.POSITIVE_INFINITY) {
         xs[v] += shift[sink[root[v]]];
+
+        // Cascade shifts as necessary
+        var w = shiftNeighbor[sink[root[v]]];
+        if (w && shift[w] !== Number.POSITIVE_INFINITY) {
+          xs[v] += shift[w];
+        }
       }
     });
   });
@@ -3046,7 +3054,7 @@ function horizontalCompaction(g, layering, root, align, reverseSep) {
   return xs;
 }
 
-function placeBlock(g, layering, sepFn, root, align, shift, sink, pred, xs, v) {
+function placeBlock(g, layering, sepFn, root, align, shift, shiftNeighbor, sink, pred, xs, v) {
   if (_.has(xs, v)) return;
   xs[v] = 0;
 
@@ -3055,7 +3063,7 @@ function placeBlock(g, layering, sepFn, root, align, shift, sink, pred, xs, v) {
   do {
     if (pred[w]) {
       u = root[pred[w]];
-      placeBlock(g, layering, sepFn, root, align, shift, sink, pred, xs, u);
+      placeBlock(g, layering, sepFn, root, align, shift, shiftNeighbor, sink, pred, xs, u);
       if (sink[v] === v) {
         sink[v] = sink[u];
       }
@@ -3063,6 +3071,7 @@ function placeBlock(g, layering, sepFn, root, align, shift, sink, pred, xs, v) {
       var delta = sepFn(g, w, pred[w]);
       if (sink[v] !== sink[u]) {
         shift[sink[u]] = Math.min(shift[sink[u]], xs[v] - xs[u] - delta);
+        shiftNeighbor[sink[u]] = sink[v];
       } else {
         xs[v] = Math.max(xs[v], xs[u] + delta);
       }
@@ -3906,7 +3915,7 @@ function notime(name, fn) {
 }
 
 },{"./graphlib":33,"./lodash":36}],56:[function(require,module,exports){
-module.exports = "0.6.2";
+module.exports = "0.6.4";
 
 },{}],57:[function(require,module,exports){
 /**
@@ -5038,7 +5047,7 @@ function read(json) {
 
 },{"./graph":72,"./lodash":75}],75:[function(require,module,exports){
 module.exports=require(20)
-},{"/Users/cpettitt/projects/dagre-d3/lib/lodash.js":20,"lodash":77}],76:[function(require,module,exports){
+},{"/Users/romain.viovi/Documents/workspace/dagre-d3/lib/lodash.js":20,"lodash":77}],76:[function(require,module,exports){
 module.exports = '1.0.1';
 
 },{}],77:[function(require,module,exports){
