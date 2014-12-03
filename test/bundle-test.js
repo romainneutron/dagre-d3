@@ -44,6 +44,10 @@ describe("dagreD3", function() {
 
       expect(d3.select("#a").datum()).to.equal("a");
       expect(d3.select("#b").datum()).to.equal("b");
+
+      // We should also be able to get to the element from the node object.
+      expect(g.node("a").elem).to.equal(d3.select("#a").node());
+      expect(g.node("b").elem).to.equal(d3.select("#b").node());
     });
 
     it("are created for each node label", function() {
@@ -62,6 +66,9 @@ describe("dagreD3", function() {
       dagreD3.render()(svg, g);
 
       expect(d3.select("#ab").datum()).eqls({ v: "a", w: "b" });
+
+      // We should also be able to get to the element from the edge object.
+      expect(g.edge("a", "b").elem).to.equal(d3.select("#ab").node());
     });
 
     it("are created for each edge label", function() {
@@ -204,7 +211,7 @@ describe("dagreD3", function() {
       g.setEdge("a", "b", { id: "ab", style: "stroke: #ff0000" });
       dagreD3.render()(svg, g);
 
-      expect(d3.select("#ab").style("stroke")).to.equal(canonicalRed);
+      expect(d3.select("#ab path").style("stroke")).to.equal(canonicalRed);
     });
 
     it("can be applied to an edge label", function() {
